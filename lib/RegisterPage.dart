@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'Loading.dart';
+
 class Album {
   final String message;
 
@@ -20,8 +22,8 @@ class Album {
 // Name and Email Controller not set!
 
 Future<Album> createAlbum(String email, String name, String password) async {
-  final response = await http.post(
-    Uri.parse('https://reqres.in/api/users'),
+  final http.Response response = await http.post(
+    Uri.parse('http://immense-fortress-65428.herokuapp.com/api/register'),
     headers: <String, String>{
       'Content-Type': 'application/x-www-form-urlencoded',
     },
@@ -181,11 +183,39 @@ class _RegisterPageState extends State<RegisterPage> {
               margin: const EdgeInsets.only(
                   left: 15.0, right: 15.0, top: 15, bottom: 0),
               decoration: BoxDecoration(
-                  color: const Color.fromARGB(133, 78, 6, 6),
+                  color: const Color.fromARGB(250, 77, 7, 7),
                   borderRadius: BorderRadius.circular(20)),
               child: FlatButton(
                 onPressed: () {
-                  if (myControllerPass1.text != myControllerPass2.text) {
+                  if (myControllerEmail.text == '' ||
+                      myControllerUName.text == '' ||
+                      myControllerPass1.text == '' ||
+                      myControllerPass2.text == '') {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Error'),
+                            content: SingleChildScrollView(
+                                child: ListBody(
+                              children: const <Widget>[
+                                Text('Enter all the fields'),
+                              ],
+                            )),
+                            actions: <Widget>[
+                              TextButton(
+                                  child: const Text('OK',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromARGB(250, 77, 7, 7))),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ],
+                          );
+                        });
+                  } else if (myControllerPass1.text != myControllerPass2.text) {
                     showDialog(
                         context: context,
                         barrierDismissible: false,
@@ -200,7 +230,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             )),
                             actions: <Widget>[
                               TextButton(
-                                  child: const Text('OK'),
+                                  child: const Text('OK',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromARGB(250, 77, 7, 7))),
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   })
@@ -208,12 +241,16 @@ class _RegisterPageState extends State<RegisterPage> {
                           );
                         });
                   } else {
-                    setState(() {
-                      _futureAlbum = createAlbum(myControllerEmail.text,
-                          myControllerUName.text, myControllerPass1.text);
-                    });
-
-                    print("Dei Database la add paniyachu da!");
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => Loader(
+                                'register',
+                                myControllerEmail.text,
+                                myControllerPass1.text,
+                                myControllerUName.text,
+                                '')),
+                        (route) => false);
                   }
                 },
                 child: const Text(

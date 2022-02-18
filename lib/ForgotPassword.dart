@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:deardiary/Loading.dart';
 import 'package:flutter/material.dart';
 import 'SetPassword.dart';
 
@@ -63,14 +64,42 @@ class _ForgotPassState extends State<ForgotPass> {
               margin: const EdgeInsets.only(
                   left: 15.0, right: 15.0, top: 15, bottom: 0),
               decoration: BoxDecoration(
-                  color: const Color.fromARGB(133, 78, 6, 6),
+                  color: const Color.fromARGB(250, 77, 7, 7),
                   borderRadius: BorderRadius.circular(20)),
               child: FlatButton(
                 onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => SetPass(email: email.text)));
+                  if (email.text == '') {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Error'),
+                            content: SingleChildScrollView(
+                                child: ListBody(
+                              children: const <Widget>[
+                                Text('Enter all the fields'),
+                              ],
+                            )),
+                            actions: <Widget>[
+                              TextButton(
+                                  child: const Text('OK',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromARGB(250, 77, 7, 7))),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ],
+                          );
+                        });
+                  } else {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                Loader('getotp', email.text, '', '', '')));
+                  }
                 },
                 child: const Text(
                   'Send OTP',

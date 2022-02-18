@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'Loading.dart';
 
 class SetPass extends StatefulWidget {
   final String email;
@@ -119,12 +120,49 @@ class _SetPassState extends State<SetPass> {
             margin: const EdgeInsets.only(
                 left: 15.0, right: 15.0, top: 15, bottom: 0),
             decoration: BoxDecoration(
-                color: const Color.fromARGB(133, 78, 6, 6),
+                color: const Color.fromARGB(250, 77, 7, 7),
                 borderRadius: BorderRadius.circular(20)),
             child: FlatButton(
               onPressed: () {
-                if (myControllerPass1.text == myControllerPass2.text) {
-                  print('Request Goes here');
+                if (myControllerPass1.text == '' ||
+                    myControllerPass2.text == '' ||
+                    myControllerOtp.text == '') {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: SingleChildScrollView(
+                              child: ListBody(
+                            children: const <Widget>[
+                              Text('Enter all the fields'),
+                            ],
+                          )),
+                          actions: <Widget>[
+                            TextButton(
+                                child: const Text('OK',
+                                    style: TextStyle(
+                                        color: Color.fromARGB(250, 77, 7, 7))),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                })
+                          ],
+                        );
+                      });
+                } else if (myControllerPass1.text == myControllerPass2.text) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => Loader(
+                          'setpass',
+                          widget.email,
+                          myControllerPass1.text,
+                          '',
+                          myControllerOtp.text),
+                    ),
+                    (route) => false,
+                  );
                 } else {
                   showDialog(
                       context: context,
@@ -140,7 +178,12 @@ class _SetPassState extends State<SetPass> {
                           )),
                           actions: <Widget>[
                             TextButton(
-                                child: const Text('OK'),
+                                child: const Text(
+                                  'OK',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(250, 77, 7, 7),
+                                  ),
+                                ),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 })

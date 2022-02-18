@@ -1,9 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'RegisterPage.dart';
 import 'HomePage.dart';
 import 'ForgotPassword.dart';
+import 'Loading.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,10 +31,13 @@ class LoginDemo extends StatefulWidget {
 }
 
 class _LoginDemoState extends State<LoginDemo> {
-  final myController = TextEditingController();
+  final myControllerEmail = TextEditingController();
+  final myControllerPass = TextEditingController();
+  late Future<Album> res;
   @override
   void dispose() {
-    myController.dispose();
+    myControllerEmail.dispose();
+    myControllerPass.dispose();
     super.dispose();
   }
 
@@ -54,12 +61,12 @@ class _LoginDemoState extends State<LoginDemo> {
                     child: Image.asset('assets/Notepad.jpg')),
               ),
             ),
-            const Padding(
-              //padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
+            Padding(
               padding:
                   EdgeInsets.only(left: 15.0, right: 15.0, top: 15, bottom: 0),
               child: TextField(
-                decoration: InputDecoration(
+                controller: myControllerEmail,
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide:
@@ -72,13 +79,14 @@ class _LoginDemoState extends State<LoginDemo> {
                     hintText: 'Enter valid email id as abc@gmail.com'),
               ),
             ),
-            const Padding(
-              padding:
-                  EdgeInsets.only(left: 15.0, right: 15.0, top: 15, bottom: 0),
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 15.0, right: 15.0, top: 15, bottom: 0),
               //padding: EdgeInsets.symmetric(horizontal: 15),
               child: TextField(
+                controller: myControllerPass,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide:
@@ -110,8 +118,44 @@ class _LoginDemoState extends State<LoginDemo> {
                   borderRadius: BorderRadius.circular(20)),
               child: FlatButton(
                 onPressed: () {
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => HomePage()));
+                  if (myControllerEmail.text == '' ||
+                      myControllerPass.text == '') {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Error'),
+                            content: SingleChildScrollView(
+                                child: ListBody(
+                              children: const <Widget>[
+                                Text('Enter all the fields'),
+                              ],
+                            )),
+                            actions: <Widget>[
+                              TextButton(
+                                  child: const Text('OK',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromARGB(250, 77, 7, 7))),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ],
+                          );
+                        });
+                  } else {
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => Loader(
+                                'login',
+                                myControllerEmail.text,
+                                myControllerPass.text,
+                                '',
+                                '')),
+                        (route) => false);
+                  }
                 },
                 child: const Text(
                   'Login',
