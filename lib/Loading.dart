@@ -20,13 +20,23 @@ class Loader extends StatefulWidget {
 }
 
 class _LoaderState extends State<Loader> {
-  bool _loading = false;
-  Widget nextPage = MyApp();
-  String loadMsg = 'Loading...';
-  final String baseURL = 'https://immense-fortress-65428.herokuapp.com/api';
+  late FToast fToast;
+  late bool _loading;
+  late Widget nextPage;
+  late String loadMsg;
+  late String toastMsg;
+  late final String baseURL;
+
   @override
   void initState() {
     super.initState();
+    fToast = FToast();
+    fToast.init(context);
+    _loading = false;
+    nextPage = MyApp();
+    loadMsg = 'Loading...';
+    toastMsg = '';
+    baseURL = 'https://immense-fortress-65428.herokuapp.com/api';
     if (widget.action == 'login') {
       methodLogin(widget.email, widget.pass);
     } else if (widget.action == 'register') {
@@ -36,6 +46,26 @@ class _LoaderState extends State<Loader> {
     } else if (widget.action == 'setpass') {
       methodSetPass(widget.email, widget.pass, widget.otp);
     }
+  }
+
+  _showToast() {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: Colors.black,
+      ),
+      child: Text(toastMsg,
+          style: const TextStyle(
+            color: Colors.white,
+          )),
+    );
+
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.BOTTOM,
+      toastDuration: const Duration(seconds: 2),
+    );
   }
 
   Future<void> methodLogin(String email, String password) async {
@@ -55,7 +85,7 @@ class _LoaderState extends State<Loader> {
     print(result);
     setState(() {
       _loading = false;
-      nextPage = HomePage();
+      nextPage = HomePage(result['memories'] as List);
     });
     if (response.statusCode == 200) {
       // print(await response.stream.bytesToString());
@@ -82,8 +112,9 @@ class _LoaderState extends State<Loader> {
     setState(() {
       _loading = false;
       nextPage = MyApp();
+      toastMsg = 'Account Registered Successfully!';
     });
-    Fluttertoast.showToast(msg: 'User Created Successfully');
+    _showToast();
     // var snackBar = const SnackBar(content: Text('User Registered Successfully'));
     // ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -105,13 +136,15 @@ class _LoaderState extends State<Loader> {
     setState(() {
       _loading = false;
       nextPage = SetPass(email: email);
+      toastMsg = "OTP has been sent to your email.";
     });
+    _showToast();
   }
 
   Future<void> methodSetPass(String email, String password, String otp) async {
     setState(() {
       _loading = true;
-      loadMsg = "Updating Your password...";
+      loadMsg = "Rewriting your password...";
     });
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request('POST', Uri.parse(baseURL + '/setpassword'));
@@ -125,7 +158,9 @@ class _LoaderState extends State<Loader> {
     setState(() {
       _loading = false;
       nextPage = MyApp();
+      toastMsg = "Your password has been changed.";
     });
+    _showToast();
   }
 
   @override
