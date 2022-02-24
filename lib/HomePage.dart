@@ -16,55 +16,91 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final String formatter = DateFormat.yMMMEd().format(DateTime.now());
   DateTime currentDate = DateTime.now();
+  DateTime searchD = DateTime.now();
+  int page = 1;
 
   List sortMemories(List mems) {
     List sortedList = mems;
     sortedList.sort(((a, b) {
-      var date1 = DateFormat('EEE, MMM d, yyyy').parse(a['date']);
-      var date2 = DateFormat('EEE, MMM d, yyyy').parse(b['date']);
+      DateTime date1 = DateFormat('EEE, MMM d, yyyy').parse(a['date']);
+      DateTime date2 = DateFormat('EEE, MMM d, yyyy').parse(b['date']);
       return date2.compareTo(date1);
     }));
-
     return sortedList;
   }
 
-  Widget getList(BuildContext context) {
-    List mem = sortMemories(widget.memories);
-    int memLen = widget.memories.length;
+  List searchDate(List mems, DateTime date) {
+    List searchList = [];
+    String dateSearch = DateFormat.yMMMEd().format(date);
+    var dateSe = DateFormat('EEE, MMM d, yyyy').parse(dateSearch);
+    for (var mem in mems) {
+      var dateMem = DateFormat('EEE, MMM d, yyyy').parse(mem['date']);
+      if (dateSe.compareTo(dateMem) == 0) {
+        searchList.add(mem);
+      }
+    }
+    print(searchList);
+    return searchList;
+  }
+
+  Widget buildPage(BuildContext context) {
+    switch (page) {
+      case 0:
+        {
+          return getList(searchDate(widget.memories, searchD));
+        }
+      default:
+        {
+          return getList(sortMemories(widget.memories));
+        }
+    }
+  }
+
+  Widget getList(List mems) {
     return Column(
       children: <Widget>[
         Row(
           children: <Widget>[
-            Column(
-              children: <Widget>[
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: FlatButton(
-                    onPressed: () {},
-                    child: Text('+ Add Memory'),
-                  ),
-                )
-              ],
+            Container(
+              width: MediaQuery.of(context).size.width * 0.1,
+              child: IconButton(
+                onPressed: () {
+                  if (page == 0) {
+                    setState(() {
+                      page = 1;
+                    });
+                  }
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                ),
+              ),
             ),
-            Column(
-              children: <Widget>[
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: FlatButton(
-                    onPressed: () async {
-                      if (await _selectDate(context)) {
-                        /* Searching part Goes here*/
-                        print(currentDate);
-                      }
-                    },
-                    child: Text('Search by Date'),
-                  ),
-                )
-              ],
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              child: FlatButton(
+                onPressed: () {},
+                child: Text('+ Add Memory'),
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              child: FlatButton(
+                onPressed: () async {
+                  if (await _selectDate(context)) {
+                    /* Searching part Goes here*/
+                    setState(() {
+                      page = 0;
+                    });
+                    print(currentDate);
+                  }
+                },
+                child: Text('Search by Date'),
+              ),
             )
           ],
         ),
-        Divider(
+        const Divider(
           thickness: 2,
           indent: 5,
           endIndent: 5,
@@ -73,8 +109,8 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
                 padding: EdgeInsets.only(left: 6.0, right: 6.0),
                 child: ListView.builder(
-                  itemCount: memLen,
-                  itemBuilder: (context, index) => memLen != 0
+                  itemCount: mems.length,
+                  itemBuilder: (context, index) => mems.isNotEmpty
                       ? SizedBox(
                           height: 120,
                           child: Card(
@@ -93,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                                 leading: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(mem[index]["date"]
+                                    Text(mems[index]["date"]
                                         .toString()
                                         .split(',')[1]),
                                     const VerticalDivider(
@@ -105,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                                     padding:
                                         EdgeInsets.only(top: 12.0, bottom: 4.0),
                                     child: Text(
-                                      mem[index]["title"].toString(),
+                                      mems[index]["title"].toString(),
                                       style: const TextStyle(
                                         fontSize: 18.0,
                                         fontWeight: FontWeight.bold,
@@ -114,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                                       overflow: TextOverflow.ellipsis,
                                     )),
                                 subtitle: Text(
-                                  mem[index]["content"].toString(),
+                                  mems[index]["content"].toString(),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -182,7 +218,7 @@ class _HomePageState extends State<HomePage> {
     if (pickedDate != null) {
       // ignore: curly_braces_in_flow_control_structures
       setState(() {
-        currentDate = pickedDate;
+        searchD = pickedDate;
       });
       return true;
     } else {
@@ -192,19 +228,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var list = [
-      {
-        "_id": "620f566295b6cc05424f0e81",
-        "uid": "844a947e-235c-43ed-b172-488792c7d04b",
-        "date": formatter,
-        "title": "Testing API",
-        "content": "This is a request to test the api",
-        "createdAt": "2022-02-18T08:18:42.664Z",
-        "updatedAt": "2022-02-18T08:18:42.664Z",
-        "__v": 0
-      }
-    ];
-    int listLen = list.length;
     return Scaffold(
       drawer: const NavDrawer(),
       appBar: AppBar(
@@ -235,7 +258,7 @@ class _HomePageState extends State<HomePage> {
                           )),
                     ))),
           ]),
-      body: getList(context),
+      body: buildPage(context),
     );
   }
 }
