@@ -35,7 +35,7 @@ class LoginDemo extends StatefulWidget {
 class _LoginDemoState extends State<LoginDemo> {
   final myControllerEmail = TextEditingController();
   final myControllerPass = TextEditingController();
-  late Future<Album> res;
+
   @override
   void dispose() {
     myControllerEmail.dispose();

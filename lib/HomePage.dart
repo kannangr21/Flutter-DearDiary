@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:deardiary/FeedBackSubmit.dart';
 import 'package:deardiary/Loading.dart';
 import 'package:deardiary/main.dart';
+import 'package:deardiary/ShowMemory.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'Profile.dart';
@@ -30,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     currentDate = DateTime.now();
     searchD = DateTime.now();
     page = 0;
-    dateInput = TextEditingController();
+    dateInput = TextEditingController(text: formatter);
     titleInput = TextEditingController();
     contentInput = TextEditingController();
     super.initState();
@@ -62,7 +64,6 @@ class _HomePageState extends State<HomePage> {
         searchList.add(mem);
       }
     }
-    print(searchList);
     return searchList;
   }
 
@@ -105,7 +106,6 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       page = 2;
                     });
-                    print(currentDate);
                   }
                 },
                 child: Text('Search by Date'),
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
               child: FlatButton(
                 onPressed: () {
                   setState(() {
-                    dateInput.text = DateFormat.yMMMEd().format(DateTime.now());
+                    // dateInput.text = DateFormat.yMMMEd().format(DateTime.now());
                     page = 1;
                   });
                 },
@@ -329,7 +329,6 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       page = 2;
                     });
-                    print(searchD);
                   }
                 },
                 child: Text('Search by Date'),
@@ -391,7 +390,16 @@ class _HomePageState extends State<HomePage> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => ShowMem(
+                                              mems[index]["date"].toString(),
+                                              mems[index]["title"].toString(),
+                                              mems[index]["content"]
+                                                  .toString())));
+                                },
                               )))
                       : const CircularProgressIndicator(),
                 )))
@@ -498,10 +506,14 @@ class NavDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.border_color),
-            title: Text('Feedback'),
-            onTap: () => {Navigator.of(context).pop()},
-          ),
+              leading: Icon(Icons.border_color),
+              title: Text('Feedback'),
+              onTap: () => {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => FeedBackSubmit(user['name'])))
+                  }),
           ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),

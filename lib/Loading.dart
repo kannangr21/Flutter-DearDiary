@@ -1,3 +1,4 @@
+import 'package:deardiary/FeedBackSubmit.dart';
 import 'package:deardiary/HomePage.dart';
 import 'package:deardiary/SetPassword.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,8 @@ class _LoaderState extends State<Loader> {
       methodSetPass(widget.email, widget.pass, widget.otp);
     } else if (widget.action == 'addmemory') {
       methodAddMem(uid, widget.date, widget.title, widget.content);
+    } else if (widget.action == 'sendfb') {
+      methodSendFb(widget.name, widget.content);
     }
   }
 
@@ -95,13 +98,13 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result);
+
     setState(() {
       if (result['success']) {
         _loading = false;
         uid = result['user']['userId'];
         UidStorage.writeUid(uid);
-        print('UID Saved');
+
         nextPage = HomePage(result['user'], result['memories'] as List);
       } else {
         _loading = false;
@@ -126,7 +129,7 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result['message']);
+
     setState(() {
       if (result['success']) {
         _loading = false;
@@ -156,7 +159,7 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result['message']);
+
     setState(() {
       if (result['success']) {
         _loading = false;
@@ -184,7 +187,7 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result['message']);
+
     setState(() {
       if (result['success']) {
         _loading = false;
@@ -218,7 +221,7 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result['message']);
+
     setState(() {
       if (result['success']) {
         _loading = false;
@@ -248,12 +251,41 @@ class _LoaderState extends State<Loader> {
     // ignore: non_constant_identifier_names
     var Sresponse = await http.Response.fromStream(response);
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
-    print(result['message']);
+
     setState(() {
       if (result['success']) {
         _loading = false;
-        nextPage = HomePage(result['user'] as List, result['memories'] as List);
+        nextPage = HomePage(result['user'], result['memories'] as List);
         toastMsg = "Written in your Diary";
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        nextPage = const MyApp();
+      }
+    });
+    _showToast();
+  }
+
+  Future<void> methodSendFb(String name, String feedback) async {
+    setState(() {
+      _loading = true;
+      loadMsg = "Sending your feedback...";
+    });
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request('POST', Uri.parse(baseURL + '/feedback'));
+    request.bodyFields = {'name': name, 'feedback': feedback};
+    request.headers.addAll(headers);
+    http.StreamedResponse response = await request.send();
+    // ignore: non_constant_identifier_names
+    var Sresponse = await http.Response.fromStream(response);
+    final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
+
+    setState(() {
+      if (result['success']) {
+        _loading = false;
+        nextPage = FeedBackSubmit(name);
+        toastMsg =
+            "We have received your feedback.\nThanks for submitting your feedback.";
       } else {
         _loading = false;
         toastMsg = result['message'];
@@ -268,30 +300,31 @@ class _LoaderState extends State<Loader> {
     if (_loading) {
       // Alignment not centered!!!
       return MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Scaffold(
               body: SingleChildScrollView(
                   child: Column(children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 200.0),
-          child: Center(
-            child: SizedBox(
-                width: 320,
-                height: 250,
-                child: Image.asset('assets/Loading.gif')),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(
-              left: 15.0, right: 15.0, top: 70, bottom: 0),
-          child: Text(
-            loadMsg,
-            style: const TextStyle(
-              color: Color.fromARGB(250, 77, 7, 7),
-              fontWeight: FontWeight.w400,
+            Padding(
+              padding: const EdgeInsets.only(top: 200.0),
+              child: Center(
+                child: SizedBox(
+                    width: 320,
+                    height: 250,
+                    child: Image.asset('assets/Loading.gif')),
+              ),
             ),
-          ),
-        ),
-      ]))));
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 15.0, right: 15.0, top: 70, bottom: 0),
+              child: Text(
+                loadMsg,
+                style: const TextStyle(
+                  color: Color.fromARGB(250, 77, 7, 7),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ]))));
     } else {
       return nextPage;
     }

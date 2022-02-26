@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
               endIndent: 5,
             ),
           ])),
-          Align(
+          const Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
                   padding: EdgeInsets.only(bottom: 25),

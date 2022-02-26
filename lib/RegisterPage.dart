@@ -7,60 +7,6 @@ import 'package:http/http.dart' as http;
 
 import 'Loading.dart';
 
-class Album {
-  final String message;
-
-  const Album({required this.message});
-
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
-      message: json['message'],
-    );
-  }
-}
-
-// Name and Email Controller not set!
-
-Future<Album> createAlbum(String email, String name, String password) async {
-  final http.Response response = await http.post(
-    Uri.parse('http://immense-fortress-65428.herokuapp.com/api/register'),
-    headers: <String, String>{
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: jsonEncode(<String, String>{
-      'name': name,
-      'job': email,
-      'password': password,
-    }),
-  );
-  print("Inga iruken");
-  if (response.statusCode == 201) {
-    // If the server did return a 201 CREATED response,
-    // then parse the JSON.
-    return Album.fromJson(jsonDecode(response.body));
-  } else {
-    // If the server did not return a 201 CREATED response,
-    // then throw an exception.
-    throw Exception('Failed to create album.');
-  }
-}
-
-/*
-Future<http.Response> createAlbum(String email, String name, String password) async {
-  return http.post(
-    Uri.parse('http://127.0.0.1:3000/api/register'),
-    headers: <String, String>{
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: jsonEncode(<String, String>{
-      'email': email,
-      'name': name,
-      'password': password,
-    }),
-  );
-}
-*/
-
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
 
@@ -85,7 +31,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    Future<Album> _futureAlbum;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register Page'),
