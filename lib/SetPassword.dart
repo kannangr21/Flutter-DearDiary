@@ -159,7 +159,10 @@ class _SetPassState extends State<SetPass> {
                           widget.email,
                           myControllerPass1.text,
                           '',
-                          myControllerOtp.text),
+                          myControllerOtp.text,
+                          '',
+                          '',
+                          ''),
                     ),
                     (route) => false,
                   );

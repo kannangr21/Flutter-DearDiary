@@ -97,8 +97,8 @@ class _ForgotPassState extends State<ForgotPass> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) =>
-                                Loader('getotp', email.text, '', '', '')));
+                            builder: (_) => Loader(
+                                'getotp', email.text, '', '', '', '', '', '')));
                   }
                 },
                 child: const Text(

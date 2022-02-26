@@ -249,6 +249,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 myControllerEmail.text,
                                 myControllerPass1.text,
                                 myControllerUName.text,
+                                '',
+                                '',
+                                '',
                                 '')),
                         (route) => false);
                   }

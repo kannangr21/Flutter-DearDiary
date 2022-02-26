@@ -1,23 +1,46 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:deardiary/Loading.dart';
 import 'package:deardiary/main.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'Profile.dart';
 
 class HomePage extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   final memories;
-
-  const HomePage(this.memories, {Key? key}) : super(key: key);
+  final user;
+  const HomePage(this.user, this.memories, {Key? key}) : super(key: key);
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final String formatter = DateFormat.yMMMEd().format(DateTime.now());
-  DateTime currentDate = DateTime.now();
-  DateTime searchD = DateTime.now();
-  int page = 1;
+  late final String formatter;
+  late DateTime currentDate;
+  late DateTime searchD;
+  late int page;
+  late TextEditingController dateInput;
+  late TextEditingController titleInput;
+  late TextEditingController contentInput;
+
+  @override
+  void initState() {
+    formatter = DateFormat.yMMMEd().format(DateTime.now());
+    currentDate = DateTime.now();
+    searchD = DateTime.now();
+    page = 0;
+    dateInput = TextEditingController();
+    titleInput = TextEditingController();
+    contentInput = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    dateInput.dispose();
+    super.dispose();
+  }
 
   List sortMemories(List mems) {
     List sortedList = mems;
@@ -43,20 +66,7 @@ class _HomePageState extends State<HomePage> {
     return searchList;
   }
 
-  Widget buildPage(BuildContext context) {
-    switch (page) {
-      case 0:
-        {
-          return getList(searchDate(widget.memories, searchD));
-        }
-      default:
-        {
-          return getList(sortMemories(widget.memories));
-        }
-    }
-  }
-
-  Widget getList(List mems) {
+  Widget addMemory(BuildContext context) {
     return Column(
       children: <Widget>[
         Row(
@@ -64,10 +74,11 @@ class _HomePageState extends State<HomePage> {
             Container(
               width: MediaQuery.of(context).size.width * 0.1,
               child: IconButton(
+                iconSize: 20,
                 onPressed: () {
-                  if (page == 0) {
+                  if (page == 1) {
                     setState(() {
-                      page = 1;
+                      page = 0;
                     });
                   }
                 },
@@ -79,7 +90,9 @@ class _HomePageState extends State<HomePage> {
             Container(
               width: MediaQuery.of(context).size.width * 0.45,
               child: FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  setState(() {});
+                },
                 child: Text('+ Add Memory'),
               ),
             ),
@@ -90,9 +103,233 @@ class _HomePageState extends State<HomePage> {
                   if (await _selectDate(context)) {
                     /* Searching part Goes here*/
                     setState(() {
-                      page = 0;
+                      page = 2;
                     });
                     print(currentDate);
+                  }
+                },
+                child: Text('Search by Date'),
+              ),
+            )
+          ],
+        ),
+        const Divider(
+          thickness: 2,
+          indent: 5,
+          endIndent: 5,
+        ),
+        SingleChildScrollView(
+            child: Column(children: [
+          Padding(
+            padding: const EdgeInsets.only(
+                left: 15.0, right: 15.0, top: 15, bottom: 0),
+            child: TextFormField(
+              focusNode: AlwaysDisabledFocusNode(),
+              controller: dateInput,
+              onTap: () async {
+                if (await _selectDate(context)) {
+                  setState(() {
+                    dateInput.text = DateFormat.yMMMEd().format(searchD);
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  onPressed: () async {
+                    if (await _selectDate(context)) {
+                      setState(() {
+                        dateInput.text = DateFormat.yMMMEd().format(searchD);
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.calendar_today,
+                      color: Color.fromARGB(250, 77, 7, 7)),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide:
+                      const BorderSide(color: Color.fromARGB(250, 77, 7, 7)),
+                ),
+                labelText: "Date",
+                labelStyle: const TextStyle(
+                  color: Color.fromARGB(250, 77, 7, 7),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding:
+                EdgeInsets.only(left: 15.0, right: 15.0, top: 25, bottom: 0),
+            child: TextField(
+              controller: titleInput,
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide:
+                        BorderSide(color: Color.fromARGB(250, 77, 7, 7)),
+                  ),
+                  labelText: 'Title',
+                  labelStyle: const TextStyle(
+                    color: Color.fromARGB(250, 77, 7, 7),
+                  ),
+                  hintText: 'Give your memory a title'),
+            ),
+          ),
+          Container(
+            child: Padding(
+              padding:
+                  EdgeInsets.only(left: 15.0, right: 15.0, top: 25, bottom: 0),
+              child: TextField(
+                maxLines: 10,
+                controller: contentInput,
+                decoration: InputDecoration(
+                    isCollapsed: true,
+                    contentPadding: EdgeInsets.all(12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide:
+                          BorderSide(color: Color.fromARGB(250, 77, 7, 7)),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color.fromARGB(250, 77, 7, 7),
+                    ),
+                    hintText: 'Drop down your memory here...'),
+              ),
+            ),
+          ),
+          Container(
+            height: 50,
+            width: 250,
+            margin: const EdgeInsets.only(
+                left: 15.0, right: 15.0, top: 25, bottom: 0),
+            decoration: BoxDecoration(
+                color: const Color.fromARGB(250, 77, 7, 7),
+                borderRadius: BorderRadius.circular(20)),
+            child: FlatButton(
+              onPressed: () {
+                if (titleInput.text == '' || contentInput.text == '') {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Create a Wholesome memory'),
+                          content: SingleChildScrollView(
+                              child: ListBody(
+                            children: const <Widget>[
+                              Text(
+                                  'Enter both the title and the description to define your memory.'),
+                            ],
+                          )),
+                          actions: <Widget>[
+                            TextButton(
+                                child: const Text('OK',
+                                    style: TextStyle(
+                                        color: Color.fromARGB(250, 77, 7, 7))),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                })
+                          ],
+                        );
+                      });
+                } else {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => Loader(
+                                'addmemory',
+                                '',
+                                '',
+                                '',
+                                '',
+                                dateInput.text,
+                                titleInput.text,
+                                contentInput.text,
+                              )));
+                }
+              },
+              child: const Text(
+                'Add to my Diary',
+                style: TextStyle(color: Colors.white, fontSize: 25),
+              ),
+            ),
+          ),
+        ]))
+      ],
+    );
+  }
+
+  Widget buildPage(BuildContext context) {
+    switch (page) {
+      case 0:
+        {
+          return getList(sortMemories(widget.memories));
+        }
+      case 1:
+        {
+          return addMemory(context);
+        }
+      case 2:
+        {
+          return getList(searchDate(widget.memories, searchD));
+        }
+      default:
+        return getList(sortMemories(widget.memories));
+    }
+  }
+
+  Widget getList(List mems) {
+    return Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Container(
+              width: MediaQuery.of(context).size.width * 0.1,
+              child: IconButton(
+                iconSize: 20,
+                onPressed: () {
+                  if (page == 2) {
+                    setState(() {
+                      page = 0;
+                    });
+                  }
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                ),
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              child: FlatButton(
+                onPressed: () {
+                  setState(() {
+                    dateInput.text = DateFormat.yMMMEd().format(DateTime.now());
+                    page = 1;
+                  });
+                },
+                child: Text('+ Add Memory'),
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              child: FlatButton(
+                onPressed: () async {
+                  if (await _selectDate(context)) {
+                    /* Searching part Goes here*/
+                    setState(() {
+                      page = 2;
+                    });
+                    print(searchD);
                   }
                 },
                 child: Text('Search by Date'),
@@ -158,34 +395,6 @@ class _HomePageState extends State<HomePage> {
                               )))
                       : const CircularProgressIndicator(),
                 )))
-        // SizedBox(
-        //     height: 500,
-        //     child: Card(
-        //         shape: RoundedRectangleBorder(
-        //           side: BorderSide(
-        //             color: Colors.green.shade300,
-        //           ),
-        //           borderRadius: BorderRadius.circular(15.0),
-        //         ),
-        //         child: const ListTile(
-        //           title: Text("Title"),
-        //           subtitle: Text("This is a Subtitle"),
-        //         ))),
-        // SizedBox(
-        //     height: 500,
-        //     child: Card(
-        //         shape: RoundedRectangleBorder(
-        //           side: BorderSide(
-        //             color: Colors.green.shade300,
-        //           ),
-        //           borderRadius: BorderRadius.circular(15.0),
-        //         ),
-        //         child: const ListTile(
-        //           title: Text("Title"),
-        //           subtitle: Text("This is a Subtitle"),
-        //       )
-        //     )
-        //   ),
       ],
     );
   }
@@ -229,7 +438,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const NavDrawer(),
+      drawer: NavDrawer(widget.user),
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
           title: const Text('My Diary'),
           backgroundColor: const Color.fromARGB(250, 77, 7, 7),
@@ -245,18 +455,14 @@ class _HomePageState extends State<HomePage> {
           }),
           actions: <Widget>[
             Padding(
-                padding: const EdgeInsets.only(right: 20.0),
+                padding: const EdgeInsets.only(top: 20, right: 20.0),
                 child: GestureDetector(
-                    onTap: () {},
-                    child: FlatButton(
-                      onPressed: () {
-                        print(formatter);
-                      },
-                      child: Text(formatter,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          )),
-                    ))),
+                  onTap: () {},
+                  child: Text(formatter,
+                      style: const TextStyle(
+                        color: Colors.white,
+                      )),
+                )),
           ]),
       body: buildPage(context),
     );
@@ -264,7 +470,8 @@ class _HomePageState extends State<HomePage> {
 }
 
 class NavDrawer extends StatelessWidget {
-  const NavDrawer({Key? key}) : super(key: key);
+  final user;
+  const NavDrawer(this.user, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +492,10 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.account_circle_sharp),
             title: Text('Profile'),
-            onTap: () => {},
+            onTap: () => {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => ProfilePage(user)))
+            },
           ),
           ListTile(
             leading: Icon(Icons.border_color),
@@ -304,4 +514,9 @@ class NavDrawer extends StatelessWidget {
       ),
     );
   }
+}
+
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
 }

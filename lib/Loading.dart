@@ -5,6 +5,7 @@ import 'main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'Storage.dart';
 
 class Loader extends StatefulWidget {
   final String action;
@@ -12,8 +13,12 @@ class Loader extends StatefulWidget {
   final String pass;
   final String name;
   final String otp;
+  final String date;
+  final String title;
+  final String content;
 
-  const Loader(this.action, this.email, this.pass, this.name, this.otp);
+  Loader(this.action, this.email, this.pass, this.name, this.otp, this.date,
+      this.title, this.content);
 
   @override
   _LoaderState createState() => _LoaderState();
@@ -26,6 +31,7 @@ class _LoaderState extends State<Loader> {
   late String loadMsg;
   late String toastMsg;
   late final String baseURL;
+  static String uid = '';
 
   @override
   void initState() {
@@ -36,7 +42,7 @@ class _LoaderState extends State<Loader> {
     nextPage = MyApp();
     loadMsg = 'Loading...';
     toastMsg = '';
-    baseURL = 'https://immense-fortress-65428.herokuapp.com/api';
+    baseURL = 'https://fierce-badlands-19146.herokuapp.com/api';
     if (widget.action == 'login') {
       methodLogin(widget.email, widget.pass);
     } else if (widget.action == 'register') {
@@ -45,7 +51,14 @@ class _LoaderState extends State<Loader> {
       methodGetOtp(widget.email);
     } else if (widget.action == 'setpass') {
       methodSetPass(widget.email, widget.pass, widget.otp);
+    } else if (widget.action == 'addmemory') {
+      methodAddMem(uid, widget.date, widget.title, widget.content);
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   _showToast() {
@@ -84,14 +97,19 @@ class _LoaderState extends State<Loader> {
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
     print(result);
     setState(() {
-      _loading = false;
-      nextPage = HomePage(result['memories'] as List);
+      if (result['success']) {
+        _loading = false;
+        uid = result['user']['userId'];
+        UidStorage.writeUid(uid);
+        print('UID Saved');
+        nextPage = HomePage(result['user'], result['memories'] as List);
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        _showToast();
+        nextPage = const MyApp();
+      }
     });
-    if (response.statusCode == 200) {
-      // print(await response.stream.bytesToString());
-    } else {
-      print(response.reasonPhrase);
-    }
   }
 
   Future<void> methodRegister(
@@ -110,9 +128,15 @@ class _LoaderState extends State<Loader> {
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
     print(result['message']);
     setState(() {
-      _loading = false;
-      nextPage = MyApp();
-      toastMsg = 'Account Registered Successfully!';
+      if (result['success']) {
+        _loading = false;
+        nextPage = MyApp();
+        toastMsg = 'Account Registered Successfully!';
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        nextPage = const MyApp();
+      }
     });
     _showToast();
     // var snackBar = const SnackBar(content: Text('User Registered Successfully'));
@@ -134,9 +158,15 @@ class _LoaderState extends State<Loader> {
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
     print(result['message']);
     setState(() {
-      _loading = false;
-      nextPage = SetPass(email: email);
-      toastMsg = "OTP has been sent to your email.";
+      if (result['success']) {
+        _loading = false;
+        nextPage = SetPass(email: email);
+        toastMsg = "OTP has been sent to your email.";
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        nextPage = const MyApp();
+      }
     });
     _showToast();
   }
@@ -156,9 +186,79 @@ class _LoaderState extends State<Loader> {
     final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
     print(result['message']);
     setState(() {
-      _loading = false;
-      nextPage = MyApp();
-      toastMsg = "Your password has been changed.";
+      if (result['success']) {
+        _loading = false;
+        nextPage = MyApp();
+        toastMsg = "Your password has been changed.";
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        nextPage = const MyApp();
+      }
+    });
+    _showToast();
+  }
+
+  Future<void> methodAddMem(
+      String uid, String date, String title, String content) async {
+    setState(() {
+      _loading = true;
+      loadMsg = "Writing in your diary...";
+    });
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request('POST', Uri.parse(baseURL + '/memory/create'));
+    request.bodyFields = {
+      'uuid': uid,
+      'date': date,
+      'title': title,
+      'content': content
+    };
+    request.headers.addAll(headers);
+    http.StreamedResponse response = await request.send();
+    // ignore: non_constant_identifier_names
+    var Sresponse = await http.Response.fromStream(response);
+    final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
+    print(result['message']);
+    setState(() {
+      if (result['success']) {
+        _loading = false;
+        getHomePage(uid);
+        nextPage = MyApp();
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        _showToast();
+        nextPage = const MyApp();
+      }
+    });
+  }
+
+  Future<void> getHomePage(String uid) async {
+    setState(() {
+      _loading = true;
+      loadMsg = "Writing in your diary...\nThis may take few seconds.";
+    });
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request('GET', Uri.parse(baseURL + '/homepage'));
+    request.bodyFields = {
+      'uuid': uid,
+    };
+    request.headers.addAll(headers);
+    http.StreamedResponse response = await request.send();
+    // ignore: non_constant_identifier_names
+    var Sresponse = await http.Response.fromStream(response);
+    final result = jsonDecode(Sresponse.body) as Map<String, dynamic>;
+    print(result['message']);
+    setState(() {
+      if (result['success']) {
+        _loading = false;
+        nextPage = HomePage(result['user'] as List, result['memories'] as List);
+        toastMsg = "Written in your Diary";
+      } else {
+        _loading = false;
+        toastMsg = result['message'];
+        nextPage = const MyApp();
+      }
     });
     _showToast();
   }
