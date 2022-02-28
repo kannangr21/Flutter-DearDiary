@@ -51,6 +51,7 @@ class _ShowMemState extends State<ShowMem> {
                     Expanded(
                         child: SingleChildScrollView(
                       child: Align(
+                        alignment: Alignment.topLeft,
                         child: Padding(
                             padding:
                                 EdgeInsets.only(left: 15, right: 10, top: 15),
