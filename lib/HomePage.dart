@@ -344,65 +344,75 @@ class _HomePageState extends State<HomePage> {
         Expanded(
             child: Padding(
                 padding: EdgeInsets.only(left: 6.0, right: 6.0),
-                child: ListView.builder(
-                  itemCount: mems.length,
-                  itemBuilder: (context, index) => mems.isNotEmpty
-                      ? SizedBox(
-                          height: 120,
-                          child: Card(
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(
-                                  color: Color.fromARGB(133, 78, 6, 6),
+                child: mems.isEmpty
+                    ? Column(children: [
+                        Expanded(
+                            child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Image.asset('assets/Empty.png'),
+                        )),
+                        const Padding(
+                            padding: EdgeInsets.only(bottom: 100),
+                            child: Text(
+                                'Looks like this page is empty.\nClick \'+ Add memory\' to add a memory...',
+                                style: TextStyle(fontSize: 16)))
+                      ])
+                    : ListView.builder(
+                        itemCount: mems.length,
+                        itemBuilder: (context, index) => SizedBox(
+                            height: 120,
+                            child: Card(
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    color: Color.fromARGB(133, 78, 6, 6),
+                                  ),
+                                  borderRadius: BorderRadius.circular(20.0),
                                 ),
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.only(
-                                    top: 10.0,
-                                    right: 7.0,
-                                    left: 5.0,
-                                    bottom: 10.0),
-                                leading: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(mems[index]["date"]
-                                        .toString()
-                                        .split(',')[1]),
-                                    const VerticalDivider(
-                                      thickness: 2,
-                                    ),
-                                  ],
-                                ),
-                                title: Padding(
-                                    padding:
-                                        EdgeInsets.only(top: 12.0, bottom: 4.0),
-                                    child: Text(
-                                      mems[index]["title"].toString(),
-                                      style: const TextStyle(
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.bold,
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.only(
+                                      top: 10.0,
+                                      right: 7.0,
+                                      left: 5.0,
+                                      bottom: 10.0),
+                                  leading: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(mems[index]["date"]
+                                          .toString()
+                                          .split(',')[1]),
+                                      const VerticalDivider(
+                                        thickness: 2,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )),
-                                subtitle: Text(
-                                  mems[index]["content"].toString(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => ShowMem(
-                                              mems[index]["date"].toString(),
-                                              mems[index]["title"].toString(),
-                                              mems[index]["content"]
-                                                  .toString())));
-                                },
-                              )))
-                      : const CircularProgressIndicator(),
-                )))
+                                    ],
+                                  ),
+                                  title: Padding(
+                                      padding: EdgeInsets.only(
+                                          top: 12.0, bottom: 4.0),
+                                      child: Text(
+                                        mems[index]["title"].toString(),
+                                        style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                                  subtitle: Text(
+                                    mems[index]["content"].toString(),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => ShowMem(
+                                                mems[index]["date"].toString(),
+                                                mems[index]["title"].toString(),
+                                                mems[index]["content"]
+                                                    .toString())));
+                                  },
+                                ))))))
       ],
     );
   }
