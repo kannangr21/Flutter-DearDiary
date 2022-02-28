@@ -8,6 +8,7 @@ import 'RegisterPage.dart';
 import 'HomePage.dart';
 import 'ForgotPassword.dart';
 import 'Loading.dart';
+import 'Storage.dart';
 
 void main() {
   runApp(MyApp());
@@ -18,10 +19,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginDemo(),
-    );
+    return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: FutureBuilder<String>(
+            future: UidStorage.readUid(),
+            builder: (context, AsyncSnapshot<String> snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data != '') {
+                  return Loader('homepage', '', '', snapshot.data.toString(),
+                      '', '', '', '');
+                } else {
+                  return const LoginDemo();
+                }
+              } else {
+                return const LoginDemo();
+              }
+            }));
   }
 }
 

@@ -53,9 +53,11 @@ class _LoaderState extends State<Loader> {
     } else if (widget.action == 'setpass') {
       methodSetPass(widget.email, widget.pass, widget.otp);
     } else if (widget.action == 'addmemory') {
-      methodAddMem(uid, widget.date, widget.title, widget.content);
+      methodAddMem(widget.date, widget.title, widget.content);
     } else if (widget.action == 'sendfb') {
       methodSendFb(widget.name, widget.content);
+    } else if (widget.action == 'homepage') {
+      getHomePage(widget.name);
     }
   }
 
@@ -202,14 +204,14 @@ class _LoaderState extends State<Loader> {
     _showToast();
   }
 
-  Future<void> methodAddMem(
-      String uid, String date, String title, String content) async {
+  Future<void> methodAddMem(String date, String title, String content) async {
     setState(() {
       _loading = true;
       loadMsg = "Writing in your diary...";
     });
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request('POST', Uri.parse(baseURL + '/memory/create'));
+    uid = await UidStorage.readUid();
     request.bodyFields = {
       'uuid': uid,
       'date': date,
@@ -239,7 +241,11 @@ class _LoaderState extends State<Loader> {
   Future<void> getHomePage(String uid) async {
     setState(() {
       _loading = true;
-      loadMsg = "Writing in your diary...\nThis may take few seconds.";
+      if (widget.action == 'homepage') {
+        loadMsg = "Hold On!! Opening your diary...";
+      } else {
+        loadMsg = "Writing in your diary...\nThis may take few seconds.";
+      }
     });
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request('GET', Uri.parse(baseURL + '/homepage'));
@@ -256,14 +262,17 @@ class _LoaderState extends State<Loader> {
       if (result['success']) {
         _loading = false;
         nextPage = HomePage(result['user'], result['memories'] as List);
-        toastMsg = "Written in your Diary";
+        if (widget.action != 'homepage') {
+          toastMsg = "Written in your Diary";
+          _showToast();
+        }
       } else {
         _loading = false;
         toastMsg = result['message'];
         nextPage = const MyApp();
+        _showToast();
       }
     });
-    _showToast();
   }
 
   Future<void> methodSendFb(String name, String feedback) async {
@@ -330,9 +339,3 @@ class _LoaderState extends State<Loader> {
     }
   }
 }
-
-// Center(
-//                   child: CircularProgressIndicator(
-//                   color: Color.fromARGB(250, 77, 7, 7), 
-//                   )
-//                 ),

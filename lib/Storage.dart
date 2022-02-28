@@ -21,4 +21,15 @@ class UidStorage {
     final file = await _localFile;
     return file.writeAsString(uid);
   }
+
+  static Future<String> readUid() async {
+    try {
+      final file = await _localFile;
+      final contents = await file.readAsString();
+
+      return contents;
+    } catch (e) {
+      return '';
+    }
+  }
 }

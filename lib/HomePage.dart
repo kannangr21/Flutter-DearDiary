@@ -2,6 +2,7 @@
 
 import 'package:deardiary/FeedBackSubmit.dart';
 import 'package:deardiary/Loading.dart';
+import 'package:deardiary/Storage.dart';
 import 'package:deardiary/main.dart';
 import 'package:deardiary/ShowMemory.dart';
 import 'package:flutter/material.dart';
@@ -528,6 +529,7 @@ class NavDrawer extends StatelessWidget {
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),
             onTap: () => {
+              UidStorage.writeUid(''),
               Navigator.pushAndRemoveUntil(context,
                   MaterialPageRoute(builder: (_) => MyApp()), (route) => false)
             },
